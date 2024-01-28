@@ -24,13 +24,17 @@ func TestChunkerNext(t *testing.T) {
 	require.NoError(t, err)
 
 	var output []byte
-	for chunker.HasNext() {
+	for {
 		chunk, err := chunker.Next()
 		require.NoError(t, err)
 		output = append(output, chunk...)
 
-		assert.True(t, len(chunk) <= options.maxSize)
-		assert.True(t, len(chunk) >= options.minSize || !chunker.HasNext())
+		if !chunker.HasNext() {
+			break
+		}
+
+		assert.True(t, len(chunk) <= options.maxSize, "maxSize=%d len=%d", options.maxSize, len(chunk))
+		assert.True(t, len(chunk) >= options.minSize, "minSize=%d len=%d", options.minSize, len(chunk))
 	}
 
 	expect, err := io.ReadAll(&input)
